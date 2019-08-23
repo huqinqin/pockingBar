@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body onload="onLoad();">
+    <canvas id="cvs" width="1000" height="1000" style="border: 1px solid black"></canvas>
+    <script>
+        var cvs = document.getElementById('cvs');
+        var ctx = cvs.getContext('2d');
+        var gGame = null;
+        function onLoad() {
+            gGame = new Game();
+            gGame.render();
+            gGame.update();
+        }
+        /*主逻辑，坦克，摇杆绘制到canvas上*/
+        function Game() {
+            var _this = this;
+            this.bar = null;
+            this.tank = null;
+            this.render = function () {
+                _this.bar = new Bar();
+                _this.tank = new Tank();
+            }
+            this.update = function () {
+                ctx.clearRect(0,0,cvs.width,cvs.height);
+                _this.bar.updatePos();
+                _this.bar.draw();
+                _this.tank.updatePos(_this.bar.angle);
+                _this.tank.draw();
+                window.requestAnimationFrame(_this.update)
+            }
+        }
+        /*实现构造继承*/
+        function commonAttr() {
+            this.positionX = 0;
+            this.positionY = 0;
+            this.angle = 0;
+        }
+        /*摇杆*/
+        function Bar() {
+            var _this = this;
+            commonAttr.call(this);
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.strokeStyle = 'green';
+                ctx.arc(400,600,100,0,Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.arc(_this.positionX,_this.positionY,10,0,Math.PI * 2);
+                ctx.stroke();
+            };
+            this.updatePos = function () {
+                _this.positionX = 400 + 100 * Math.cos(_this.angle);
+                _this.positionY = 600 + 100 * Math.sin(_this.angle);
+            };
+            /*this.update = function () {
+                ctx.clearRect(0,0,cvs.width,cvs.height);
+                _this.updatePos();
+                _this.draw();
+                window.requestAnimationFrame(_this.update)
+            };*/
+            document.onmousedown = function () {
+                cvs.onmousemove = function (e) {
+                    _this.angle = Math.atan2(e.pageY - 600, e.pageX - 400);
+                }
+            };
+            document.onmouseup = function () {
+                cvs.onmousedown = null;
+                cvs.onmousemove = null;
+            }
+        }
+        /*坦克*/
+        function Tank() {
+            var _this = this;
+            this.v = 2;
+            commonAttr.call(this);
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.font = '24px arial';
+                ctx.strokeText('坦克',_this.positionX ,_this.positionY);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(_this.positionX,_this.positionY,100,100)
+            };
+            this.updatePos = function (angle) {
+                console.log(angle);
+                var dt = 1;
+                var s = _this.v * dt;
+                _this.positionX += s * Math.cos(angle);
+                _this.positionY += s * Math.sin(angle);
+            }
+        }
+    </script>
+</body>
+</html>
